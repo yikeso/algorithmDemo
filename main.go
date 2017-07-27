@@ -15,12 +15,12 @@ func main(){
 	fmt.Println("数组长度：",l)
 	SelectionSort(arr)
 	InsertSort(arr)
-	BubbleSort(arr)
+	//BubbleSort(arr)
 	MergeSortEntry(arr)
 	MergeSortBuEntry(arr)
 	QuikSortEntry(arr)
 	QuikSortEntry2(arr)
-	time.Sleep(time.Second*30)
+	QuikSortEntry3(arr)
 }
 
 func getIntArry(l int)[]int{
@@ -280,7 +280,7 @@ func patition(arr []int, s int, e int) int{
 	return j
 }
 
-//快速排序入口
+//双路快速排序入口
 func QuikSortEntry2(a []int){
 	start := time.Now().UnixNano()
 	l := len(a)
@@ -294,7 +294,7 @@ func QuikSortEntry2(a []int){
 	}
 	quikSort2(arr,0,l)
 	end := time.Now().UnixNano()
-	fmt.Println("快速排序优化相似值耗时：",(end - start)/1e6,"ms")
+	fmt.Println("双路快速排序耗时：",(end - start)/1e6,"ms")
 	//fmt.Println("排序后：",arr)
 }
 
@@ -305,6 +305,9 @@ func quikSort2(arr []int,s,e int){
 		InsertSortboundary(arr,s,e)
 		return
 	}
+/*	if e - s < 2 {
+		return
+	}*/
 	p := patition2(arr,s,e)
 	quikSort2(arr,s,p)
 	quikSort2(arr,p+1,e)
@@ -316,28 +319,89 @@ func patition2(arr []int, s int, e int) int{
 	c := arr[m]
 	arr[m] = arr[s]
 	arr[s] = c
-	j := s
+	j := s+1
 	k := e-1
 	var t int
-	for j < k{
-		if arr[j] > c {
-			t = arr[k]
-			arr[k] = arr[j]
-			arr[j] = t
-			k--
-		}else {
+	for {
+		for j < e && arr[j] < c {
 			j++
 		}
-		if arr[k] < c {
-			t = arr[k]
-			arr[k] = arr[j]
-			arr[j] = t
-			j++
-		}else {
+		for k > s && arr[k] > c {
 			k--
+		}
+		if j > k {
+			break
+		}
+		t = arr[k]
+		arr[k] = arr[j]
+		arr[j] = t
+		k--
+		j++
+	}
+	arr[s] = arr[k]
+	arr[k] = c
+	return k
+}
+
+//三路快速排序入口
+func QuikSortEntry3(a []int){
+	start := time.Now().UnixNano()
+	l := len(a)
+	if l < 1 {
+		fmt.Println("数组不得为空")
+		return
+	}
+	arr := make([]int, l)
+	for i := 0; i < l; i++ {
+		arr[i] = a[i]
+	}
+	quikSort3(arr,0,l)
+	end := time.Now().UnixNano()
+	fmt.Println("三路快速排序耗时：",(end - start)/1e6,"ms")
+	//fmt.Println("排序后：",arr)
+}
+
+
+//快速排序,对于大量重复值得优化
+//三路快速排序
+func quikSort3(arr []int,s,e int){
+	if e - s < 14 {
+		InsertSortboundary(arr,s,e)
+		return
+	}
+/*	if e - s < 2 {
+		return
+	}*/
+	lt,gt := patition3(arr,s,e)
+	quikSort3(arr,s,lt)
+	quikSort3(arr,gt,e)
+}
+
+func patition3(arr []int, s int, e int) (lt,gt int){
+	m := (s+e)/2
+	c := arr[m]
+	arr[m] = arr[s]
+	arr[s] = c
+	lt = s
+	gt = e
+	var t int
+	for i := s+1;i < gt;{
+		if arr[i] < c {
+			lt++
+            t = arr[i]
+			arr[i] = arr[lt]
+			arr[lt] = t
+			i++
+		}else if arr[i] > c {
+			gt--
+            t = arr[i]
+			arr[i] = arr[gt]
+			arr[gt] = t
+		}else {
+			i++
 		}
 	}
-	arr[s] = arr[j]
-	arr[j] = c
-	return j
+	arr[s] = arr[lt]
+	arr[lt] = c
+	return
 }
